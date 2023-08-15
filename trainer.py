@@ -10,28 +10,91 @@ import torch
 from sklearn.metrics import roc_auc_score
 from torch.utils.data import DataLoader, Dataset
 
-from .label_coder import LabelCoder
-from .model import ModelProgression
-from .tmloss import SURELoss
-from .util.config import Config, Parser
+# from .survivalreg.label_coder import LabelCoder
+# from .survivalreg.model import ModelProgression
+# from .survivalreg.util.config import Config, Parser
+from typing import Any
+import os
+import json
+
+
+class Parser(object):
+    def __init__(self,
+                 name: str, default: Any = None,
+                 type_: callable = None, help_info: str = None):
+        self.name = name
+        self.default = default
+        self.type_ = type_
+        self.help = help_info
+
+    def __set__(self, instance, value):
+        setattr(self, 'value', value)
+
+    def __get__(self, instance, owner):
+        if hasattr(self, 'value'):
+            return getattr(self, 'value')
+        v = os.environ.get(self.name, self.default)
+        if self.type_ is not None and self.name in os.environ:
+            v = self.type_(v)
+        setattr(self, 'value', v)
+        return v
+
+    def __call__(self, s):
+        if self.type_ is not None:
+            return self.type_(s)
+        return s
+
+    def __str__(self):
+        return f'<{self.name}: {self.help} default:{self.default}>'
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
+
+class Config(object):
+    def __init__(self):
+        pass
+
+    @property
+    def value_dict(self):
+        return self._search_cfg_recursively(self.__class__)
+
+    @staticmethod
+    def _search_cfg_recursively(root):
+        vals = dict()
+        for base in root.__bases__:
+            vals.update(Config._search_cfg_recursively(base))
+        for k, v in root.__dict__.items():
+            if isinstance(v, Parser):
+                vals[k] = v.__get__(None, None)
+        return vals
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__}: {json.dumps(self.value_dict)}>'
+
+    def sample_cfg(self):
+        for k, v in self.__class__.__dict__.items():
+            if isinstance(v, Parser):
+                print(f'{k}={v.default} ', end='')
+        print()
 
 
 class TrainerConfig(Config):
     debug = Parser('debug', False,
                    lambda x: not x.lower().startswith('f'), 'debug mode ')
     load_pretrain = Parser('load_pretrain', None, str, 'load pretrained model')
-    batch_size = Parser('batch_size', 128, int, 'batch size')
+    batch_size = Parser('batch_size', 32, int, 'batch size')
     epochs = Parser('epochs', 100, int, 'number of max epochs to train')
-    image_size = Parser('image_size', 224, int, 'image size')
+    image_size = Parser('image_size', 512, int, 'image size')
     lr = Parser('lr', 0.001, float, 'learning rate')
     device = Parser('device', 'cuda:0', str, 'device')
     num_workers = Parser('num_workers', 4, int, 'number of workers')
     model = Parser('model', 'convnext_tiny', str, 'backbone model')
-        
+
 
 class Trainer():
     cfg = TrainerConfig()
-    label_coder: LabelCoder = None
+    # label_coder: LabelCoder = None
 
     def __init__(self) -> None:
         print(self.__class__)
@@ -40,9 +103,7 @@ class Trainer():
         print('running_uuid', self.running_uuid)
         print(self.cfg)
         self.epoch = None
-        if isinstance(self.label_coder, type):
-            self.label_coder = self.label_coder()
-        self._result_cache:defaultdict = None
+        self._result_cache: defaultdict = None
         self._pretrain_loaded = False
 
     def _get_cfg_recursive(self, cls=None):
@@ -67,7 +128,8 @@ class Trainer():
         last_link_dir = f'logs/{self.__class__.__name__}_last'
         if os.path.islink(last_link_dir):
             os.remove(last_link_dir)
-        os.symlink(f'{self.__class__.__name__}_{self.running_uuid}', last_link_dir)
+        os.symlink(
+            f'{self.__class__.__name__}_{self.running_uuid}', last_link_dir)
         return logger_dir
 
     @cached_property
@@ -78,15 +140,7 @@ class Trainer():
 
     @cached_property
     def model(self):
-        print('initialize model ...')
-        model = ModelProgression(
-            backbone=self.cfg.model,
-            output_size=len(self.label_coder))
-        if self.cfg.load_pretrain:
-            print(f'load pretrain: {self.cfg.load_pretrain}')
-            print(model.load_state_dict(torch.load(
-                self.cfg.load_pretrain, map_location='cpu')))
-        return model
+        raise NotImplementedError
 
     @cached_property
     def train_dataset(self) -> Dataset:
@@ -131,7 +185,7 @@ class Trainer():
 
     @cached_property
     def criterion(self):
-        return SURELoss()
+        raise NotImplementedError
 
     @cached_property
     def scheduler(self):
@@ -170,7 +224,8 @@ class Trainer():
         label = torch.cat([data['code_1'], data['code_2']])
         for i in range(n_auc):
             try:
-                mat_dict[f'auc_{i}'] = roc_auc_score(label[:, i] > 0, pred[:, i])
+                mat_dict[f'auc_{i}'] = roc_auc_score(
+                    label[:, i] > 0, pred[:, i])
             except Exception as e:
                 print(e)
         return mat_dict
@@ -238,6 +293,7 @@ class Trainer():
             self.test()
             if self.cfg.debug:
                 break
+
     def predict(self, dataset):
         self.model.eval()
         self.model.to(self.device)

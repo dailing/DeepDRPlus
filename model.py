@@ -44,20 +44,8 @@ def _backbone_resnet50(*args, **kwargs):
     ]
 
 
-def _backbone_resnet101(*args, **kwargs):
-    model = resnet101(*args, **kwargs)
-    model.fc = nn.Identity()
-    return model, 2048, None
-
-
-def _backbone_convnext_tiny(*args, **kwargs):
-    model = convnext_tiny(*args, **kwargs)
-    model.classifier = nn.Identity()
-    return model, 768, None
-
-
 class ModelProgression(Module):
-    def __init__(self, backbone='convnext_tiny', output_size=20):
+    def __init__(self, backbone='resnet50', output_size=512):
         super().__init__()
         backbone, feat_size, intermediate_layers = globals(
         )[f'_backbone_{backbone}'](pretrained=True)
@@ -89,11 +77,3 @@ class ModelProgression(Module):
             self.forward_feat[name] = output.detach().cpu()
         module.register_forward_hook(wrap)
 
-
-# %%
-if __name__ == "__main__":
-    m = ModelProgression(backbone='resnet50')
-    output = m(torch.randn(1, 3, 448, 448))
-    print(output.shape)
-
-# %%
