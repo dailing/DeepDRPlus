@@ -1,15 +1,10 @@
-from survivalreg.dataset import Sample
 from model import ModelProgression
-from scipy.signal import convolve2d
-from scipy.stats import gamma
-from torchvision.datasets.mnist import MNIST
 from torch import nn
 import torch
 import numpy as np
 from functools import cached_property
 from trainer import Trainer
-from survivalreg.dataset import SurvivalFuncEstimateDataset, Sample
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 import pandas as pd
 import cv2
 import albumentations as aug
@@ -36,7 +31,9 @@ class DeepSurModel(nn.Module):
 
     def calculate_pdf(self, w, t):
         """
-        Calculates the probability distribution function (pdf) for the given data.
+        Calculates the probability distribution function (pdf) for the given 
+        data.
+        
         param w: nBatch * K: weights for mixture model
         param t: nBatch * n: target time to calculate pdf at
         return: nBatch * n: pdf values
