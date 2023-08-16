@@ -33,7 +33,7 @@ class DeepSurModel(nn.Module):
         """
         Calculates the probability distribution function (pdf) for the given 
         data.
-        
+
         param w: nBatch * K: weights for mixture model
         param t: nBatch * n: target time to calculate pdf at
         return: nBatch * n: pdf values
@@ -67,11 +67,13 @@ class ProgressionData(Dataset):
         img_file = self.df.iloc[idx]['image']
         image = cv2.imread(img_file, cv2.IMREAD_COLOR)
         image = self.transform(image=image)['image']
-        return (
-            image,
-            self.df.iloc[idx]['t1'],
-            self.df.iloc[idx]['t2'],
-            self.df.iloc[idx]['e']
+        return dict(
+            image=image,
+            t1=self.df.iloc[idx]['t1'],
+            t2=self.df.iloc[idx]['t2'],
+            e=self.df.iloc[idx]['e'],
+            # simulation only
+            gt=self.df.iloc[idx]['gt'] if 'gt' in self.df.columns else 0,
         )
 
 
@@ -88,7 +90,8 @@ class TrainerDR(Trainer):
     @cached_property
     def train_dataset(self):
         transform = aug.Compose([
-            aug.SmallestMaxSize(max_size=self.cfg.image_size, always_apply=True),
+            aug.SmallestMaxSize(
+                max_size=self.cfg.image_size, always_apply=True),
             aug.CenterCrop(self.cfg.image_size, self.cfg.image_size,
                            always_apply=True),
             aug.Flip(p=0.5),
@@ -107,7 +110,8 @@ class TrainerDR(Trainer):
     @cached_property
     def test_dataset(self):
         transform = aug.Compose([
-            aug.SmallestMaxSize(max_size=self.cfg.image_size, always_apply=True),
+            aug.SmallestMaxSize(
+                max_size=self.cfg.image_size, always_apply=True),
             aug.CenterCrop(self.cfg.image_size, self.cfg.image_size,
                            always_apply=True),
             aug.ToFloat(always_apply=True),
@@ -123,20 +127,26 @@ class TrainerDR(Trainer):
 
     def batch(self, epoch, i_batch, data) -> dict:
         # get and prepare data elements
-        imgs, t1, t2, e = data
-        imgs = imgs.to(self.device)
-        t1 = t1.to(self.device)
-        t2 = t2.to(self.device)
-        e = e.to(self.device)
+        imgs = data['image'].to(self.device)
+        t1 = data['t1'].to(self.device)
+        t2 = data['t2'].to(self.device)
+        e = data['e'].to(self.device)
 
         w, P = self.model(imgs, torch.stack([t1, t2], dim=1))
         P1 = P[:, 0]
         P2 = P[:, 1]
-        loss = (P1 + 0.000001) + (1-P2 + 0.000001) * self.beta * (t2 > t1)
-        loss += torch.abs(w).mean() * 0.001
-
+        loss = -torch.log(1-P1 + 0.000001) -torch.log(P2 +
+                                                    0.000001) * self.beta * (e)
+        loss += torch.abs(w).mean() * 0.00000001
+        time_to_cal = torch.linspace(0, 20, 240).to(
+            self.cfg.device).view(1, -1)
+        pdf = self.model.calculate_pdf(w, time_to_cal)
         return dict(
             loss=loss.mean(),
+            pdf=pdf,
+            t1=t1,
+            t2=t2,
+            gt=data['gt'],
         )
 
     def matrix(self, epoch, data) -> dict:
