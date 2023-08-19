@@ -89,7 +89,6 @@ For easy use of the code, we provided a simple command-line tool in `train.py`.
 
 All options are listed in the help documents. Refer to `trainer.py` for more details. The following instructions can be used to train models:
 
-1. The following command can be used to train the Fundus model on your data: `python train.py`
 1. The hyper-parameters are set with environment variables.
     * load_pretrain: the pre-trained model path to be loaded for fine-tuning.
     * "batch_size": the training batch size
@@ -99,3 +98,12 @@ All options are listed in the help documents. Refer to `trainer.py` for more det
     * "device": the device to be used for training
     * "num_workers": the number of workers for data loading
     * "model": the model name, ResNet-18 and ResNet-50 are supported
+1. Training fundus model:
+    * run `python train_eval_fund.py`, with proper hyper-parameters settings.
+    * the evaluation results are saved in `logs/` in a pickle dump. see trainer.py for more details.
+1. Training metadata model or combined model:
+    * to train the model, first prepare the dataset, in CSV format containing normalized features as well as event information.
+    * the feature names to use for training are provided with command-line arguments.
+    * e.g. run `python train_eval_cov.py AGE GENDER HBA1C SBP DBP BMI LDL HDL T2D_dur`, with proper hyper-parameters settings to train the metadata model with AGE, GENDER, HBA1C, SBP, DBP, BMI, LDL, HDL, T2D_dur as covariables.
+    * to run the combined model, extract the scores from the fundus model and add it to the CSV file, invoke `python train_eval_combined.py`. with fundus score included in the command-line arguments.
+    * the evaluation results are saved in `logs/` as a pickle dump. see trainer.py for more details.

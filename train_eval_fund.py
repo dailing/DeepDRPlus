@@ -24,9 +24,32 @@ class DeepSurModel(nn.Module):
 
         self.cnn = ModelProgression()
 
-    def _pdf_at(self, t):
+    def _cdf_at(self, t):
         # pdf: nBatch * n * K
         pdf = 1 - torch.exp(-(1/self.b * (t)) ** self.k)
+        return pdf
+
+    def _pdf_at(self, t):
+        # pdf: nBatch * n * K
+        pdf = self._cdf_at(t)
+        pdf = (1-pdf) * self.k * (1/self.b)*(t/self.b)**(self.k-1)
+        return pdf
+
+    def calculate_cdf(self, w, t):
+        """
+        Calculates the cumulative probability distribution function (CDF)
+        for the given data.
+
+        param w: nBatch * K: weights for mixture model
+        param t: nBatch * n: target time to calculate pdf at
+        return: nBatch * n: pdf values
+        """
+        t = t.unsqueeze(dim=2)
+        w = nn.functional.softmax(w, dim=1)
+        w = w.unsqueeze(dim=1)
+        pdf = self._cdf_at(t)
+        pdf = pdf * w
+        pdf = pdf.sum(dim=2)
         return pdf
 
     def calculate_pdf(self, w, t):
@@ -50,7 +73,7 @@ class DeepSurModel(nn.Module):
         x = self.cnn(x)
         if t is None:
             return x
-        return x, self.calculate_pdf(x, t)
+        return x, self.calculate_cdf(x, t)
 
 
 class ProgressionData(Dataset):
@@ -105,7 +128,7 @@ class TrainerDR(Trainer):
             aug.ToFloat(always_apply=True),
             aug_torch.ToTensorV2(),
         ])
-        return ProgressionData('data/train.csv', transform)
+        return ProgressionData('data_fund/train.csv', transform)
 
     @cached_property
     def test_dataset(self):
@@ -117,7 +140,7 @@ class TrainerDR(Trainer):
             aug.ToFloat(always_apply=True),
             aug_torch.ToTensorV2(),
         ])
-        return ProgressionData('data/test.csv', transform)
+        return ProgressionData('data_fund/test.csv', transform)
 
     @cached_property
     def optimizer(self):
@@ -135,15 +158,17 @@ class TrainerDR(Trainer):
         w, P = self.model(imgs, torch.stack([t1, t2], dim=1))
         P1 = P[:, 0]
         P2 = P[:, 1]
-        loss = -torch.log(1-P1 + 0.000001) -torch.log(P2 +
-                                                    0.000001) * self.beta * (e)
+        loss = -torch.log(1-P1 + 0.000001) - torch.log(P2 +
+                                                       0.000001) * self.beta * (e)
         loss += torch.abs(w).mean() * 0.00000001
         time_to_cal = torch.linspace(0, 20, 240).to(
             self.cfg.device).view(1, -1)
+        cdf = self.model.calculate_cdf(w, time_to_cal)
         pdf = self.model.calculate_pdf(w, time_to_cal)
         return dict(
             loss=loss.mean(),
             pdf=pdf,
+            cdf=cdf,
             t1=t1,
             t2=t2,
             gt=data['gt'],
