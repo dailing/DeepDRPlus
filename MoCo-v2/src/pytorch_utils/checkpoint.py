@@ -60,7 +60,7 @@ class Checkpoint:
                  lr_scheduler: Optional[torch.optim.lr_scheduler._LRScheduler]=None,
                  models_dir: str='models',
                  seed: int=None,
-                 best_policy: str='val_score',
+                 best_policy: str='val_loss',
                  naming_scheme: Optional[Callable[[str, Union[int, str], int, str], str]]=naming_scheme,
                  save: bool=False,
                  ):
@@ -462,9 +462,9 @@ class Checkpoint:
             if max_iterations is not None and i+1 >= max_iterations:
                 break
 
-        single_num_score, results = self.agg_results(self.raw_results, train=train)
-        assert isinstance(results, dict), 'results returned by agg_results must be a dict'
-        return float(np.array(self.losses).mean()), single_num_score, results
+        # single_num_score, results = self.agg_results(self.raw_results, train=train)
+        # assert isinstance(results, dict), 'results returned by agg_results must be a dict'
+        return float(np.array(self.losses).mean()), {}, {}
 
     def train(self,
               train_loader: torch.utils.data.DataLoader,
@@ -579,8 +579,8 @@ class Checkpoint:
                 'timestamp': time.strftime('%H:%M:%S %d-%m-%Y'),
                 'train_loss': train_loss,
                 'val_loss': val_loss,
-                'train_score': train_score,
-                'val_score': val_score,
+                # 'train_score': train_score,
+                # 'val_score': val_score,
                 'batch_size': self.batch_size,
             }
             row.update({'train_' + key: val for key, val in train_results.items()})
@@ -594,6 +594,7 @@ class Checkpoint:
                     best = row[self.best_policy] > self.get_log(self.best_policy, epoch='best')
             else:
                 best = False
+            best = False
             row['best'] = best
             self.log = self.log.append(pd.Series(row, name=1 if len(self.log.index) == 0 else (max(self.log.index) + 1)), ignore_index=False)
 
@@ -612,8 +613,8 @@ class Checkpoint:
             if prints == 'display':
                 display(self.log.tail(1))
             elif prints == 'print':
-                print('epoch {:3d}/{:3d} | train_loss {:.5f} | val_loss {:.5f} | train_score {:.5f} | val_score {:.5f} | train_time {:6.2f} min{:}'
-                      .format(epoch, train_epochs + start_epoch, train_loss, val_loss, train_score, val_score, train_time, " | best" if best else ""))
+                print('epoch {:3d}/{:3d} | train_loss {:.5f} | val_loss {:.5f} | train_time {:6.2f} min{:}'
+                      .format(epoch, train_epochs + start_epoch, train_loss, val_loss, train_time, " | best" if best else ""))
 
     def predict(self,
                 loader: torch.utils.data.DataLoader,

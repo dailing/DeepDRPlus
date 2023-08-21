@@ -5,7 +5,6 @@
 1. Requirements
 2. Environment setup
     * Linux System
-    * Docker
 3. Preparing the dataset
 4. Train and Testing
 
@@ -85,6 +84,13 @@ Training data should be put in a CSV file, containing the following columns:
 * e: censored or not, True for not censored(event observed), False for censored(no event observed)
 
 ## Train and Testing
+### Pretrain the network using Moco-V2
+We adopted the implementation of Moco-V2 from [MoCo-v2](https://github.com/facebookresearch/moco-v2) for pre-training.
+To pre-train the network, enter the `MoCo-v2` directory and run the following command:
+`python main_moco.py`. Optionally, you may need to change configuration parameters stored in `config.py`.
+The trained model will be saved in `MoCo-v2/models/resnet50_bs32_queue16384_wd0.0001_t0.2_cos)` directory. We choose the model with the least eval loss as the pretrained model.
+
+### Training the prediction model
 For easy use of the code, we provided a simple command-line tool in `train.py`.
 
 All options are listed in the help documents. Refer to `trainer.py` for more details. The following instructions can be used to train models:
@@ -101,6 +107,7 @@ All options are listed in the help documents. Refer to `trainer.py` for more det
 1. Training fundus model:
     * run `python train_eval_fund.py`, with proper hyper-parameters settings.
     * the evaluation results are saved in `logs/` in a pickle dump. see trainer.py for more details.
+    * to run with pretrained model, invoke `load_pretrain=MoCo-v2/models/resnet50_bs32_queue16384_wd0.0001_t0.2_cos/checkpoint_resnet50_bs32_queue16384_wd0.0001_t0.2_cos_epoch-60.pth python train_eval_fund.py `, change the model dump path as needed.
 1. Training metadata model or combined model:
     * to train the model, first prepare the dataset, in CSV format containing normalized features as well as event information.
     * the feature names to use for training are provided with command-line arguments.

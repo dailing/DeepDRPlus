@@ -104,7 +104,12 @@ class TrainerDR(Trainer):
 
     @cached_property
     def model(self):
-        return DeepSurModel().to(self.device)
+        model = DeepSurModel().to(self.device)
+        if self.cfg.load_pretrain is not None:
+            print('loading ', self.cfg.load_pretrain)
+            model.cnn.backbone.load_state_dict(
+                torch.load(self.cfg.load_pretrain, map_location=self.device)
+            )
 
     @cached_property
     def beta(self):

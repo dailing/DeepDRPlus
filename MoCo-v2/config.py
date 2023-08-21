@@ -20,7 +20,7 @@ cfg.epochs_evaluate_validation = 1  # evaluate validation (in eval mode with no_
 cfg.num_workers = 2                 # num_workers for data loader
 cfg.epochs_save = None              # save a checkpoint (additionally to last and best) every epochs_save epochs
 cfg.tqdm_bar = False                # using a tqdm bar for loading data and epoch progression, should be False if not using a jupyter notebook
-cfg.preload_data = True             # preloading data to memory
+cfg.preload_data = False            # preloading data to memory
 cfg.prints = 'print'                # should be 'display' if using a jupyter notebook, else 'print'
 
 
@@ -37,10 +37,10 @@ cfg.moco.epochs = 600  # 600 800 1000
 
 cfg.moco.optimizer_params = {}
 cfg.moco.optimizer_momentum = 0.9
-cfg.moco.lr = 3e-2
+cfg.moco.lr = 1e-3
 cfg.moco.min_lr = 5e-7
 cfg.moco.cos = True
-cfg.moco.best_policy = 'val_score'
+cfg.moco.best_policy = 'val_loss'
 cfg.moco.model_momentum = 0.999
 cfg.moco.dim = 128
 cfg.moco.mlp = True

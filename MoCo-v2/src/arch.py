@@ -21,7 +21,7 @@ class MoCo_v2(nn.Module):
     an implementation of MoCo v1 + v2
 
     MoCo v1: https://arxiv.org/abs/1911.05722
-    MoCo v1: https://arxiv.org/abs/2003.04297
+    MoCo v2: https://arxiv.org/abs/2003.04297
     """
     def __init__(self,
                  num_classes: int=10,

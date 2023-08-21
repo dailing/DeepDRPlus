@@ -28,17 +28,17 @@ print(cfg.moco.version)
 
 
 model = arch.MoCo_v2(backbone=cfg.moco.backbone,
-                        dim=cfg.moco.dim,
-                        queue_size=cfg.moco.queue_size,
-                        batch_size=cfg.moco.bs,
-                        momentum=cfg.moco.model_momentum,
-                        temperature=cfg.moco.temperature,
-                        bias=cfg.moco.bias,
-                        moco=True,
-                        clf_hyperparams=cfg.moco.clf_kwargs,
-                        seed=cfg.seed,
-                        mlp=cfg.moco.mlp,
-                    )
+                     dim=cfg.moco.dim,
+                     queue_size=cfg.moco.queue_size,
+                     batch_size=cfg.moco.bs,
+                     momentum=cfg.moco.model_momentum,
+                     temperature=cfg.moco.temperature,
+                     bias=cfg.moco.bias,
+                     moco=True,
+                     clf_hyperparams=cfg.moco.clf_kwargs,
+                     seed=cfg.seed,
+                     mlp=cfg.moco.mlp,
+                     )
 
 optimizer = torch.optim.SGD([p for p in model.parameters() if p.requires_grad],
                             lr=cfg.moco.lr,
@@ -46,8 +46,8 @@ optimizer = torch.optim.SGD([p for p in model.parameters() if p.requires_grad],
                             weight_decay=cfg.moco.wd)
 
 lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
-                                                            T_max=cfg.moco.epochs,
-                                                            eta_min=cfg.moco.min_lr) if cfg.moco.cos else None
+                                                          T_max=cfg.moco.epochs,
+                                                          eta_min=cfg.moco.min_lr) if cfg.moco.cos else None
 
 checkpoint = utils.MyCheckpoint(version=cfg.moco.version,
                                 model=model,
@@ -70,24 +70,30 @@ ptu.params(checkpoint.model)
 # In[7]:
 
 
-train_dataset = utils.Dataset(os.path.join(cfg.data_path, 'train'), cfg.moco.train_transforms, preload_data=cfg.preload_data, tqdm_bar=cfg.tqdm_bar)
-train_eval_dataset = utils.Dataset(os.path.join(cfg.data_path, 'train'), cfg.moco.train_eval_transforms, preload_data=cfg.preload_data, tqdm_bar=cfg.tqdm_bar)
-val_dataset = utils.Dataset(os.path.join(cfg.data_path, 'val'), cfg.moco.val_eval_transforms, preload_data=cfg.preload_data, tqdm_bar=cfg.tqdm_bar)
+train_dataset = utils.Dataset(os.path.join(
+    cfg.data_path, 'train'), cfg.moco.train_transforms)
+train_eval_dataset = utils.Dataset(os.path.join(
+    cfg.data_path, 'train'), cfg.moco.train_eval_transforms)
+val_dataset = utils.Dataset(os.path.join(
+    cfg.data_path, 'val'), cfg.moco.val_eval_transforms)
 
-train_loader = torch.utils.data.DataLoader(train_dataset,
-                                           batch_size=checkpoint.model.batch_size,
-                                           num_workers=cfg.num_workers,
-                                           drop_last=True, shuffle=True, pin_memory=True)
+train_loader = torch.utils.data.DataLoader(
+    train_dataset,
+    batch_size=checkpoint.model.batch_size,
+    num_workers=cfg.num_workers,
+    drop_last=True, shuffle=True, pin_memory=True)
 
-train_eval_loader = torch.utils.data.DataLoader(train_eval_dataset,
-                                                batch_size=checkpoint.model.batch_size,
-                                                num_workers=cfg.num_workers,
-                                                drop_last=True, shuffle=True, pin_memory=True)
+train_eval_loader = torch.utils.data.DataLoader(
+    train_eval_dataset,
+    batch_size=checkpoint.model.batch_size,
+    num_workers=cfg.num_workers,
+    drop_last=True, shuffle=True, pin_memory=True)
 
-val_loader = torch.utils.data.DataLoader(val_dataset,
-                                         batch_size=checkpoint.model.batch_size,
-                                         num_workers=cfg.num_workers,
-                                         drop_last=True, shuffle=False, pin_memory=True)
+val_loader = torch.utils.data.DataLoader(
+    val_dataset,
+    batch_size=checkpoint.model.batch_size,
+    num_workers=cfg.num_workers,
+    drop_last=True, shuffle=False, pin_memory=True)
 
 
 # In[ ]:
@@ -96,7 +102,8 @@ val_loader = torch.utils.data.DataLoader(val_dataset,
 checkpoint.train(train_loader=train_loader,
                  train_eval_loader=train_eval_loader,
                  val_loader=val_loader,
-                 train_epochs=int(max(0, cfg.moco.epochs - checkpoint.get_log())),
+                 train_epochs=int(
+                     max(0, cfg.moco.epochs - checkpoint.get_log())),
                  optimizer_params=cfg.moco.optimizer_params,
                  prints=cfg.prints,
                  epochs_save=cfg.epochs_save,
@@ -106,4 +113,4 @@ checkpoint.train(train_loader=train_loader,
                  tqdm_bar=cfg.tqdm_bar,
                  save=cfg.save,
                  save_log=cfg.save_log,
-                )
+                 )
