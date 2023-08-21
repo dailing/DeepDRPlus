@@ -1,4 +1,3 @@
-data/
 **/.ipynb_checkpoints/
 models/resnext50_32x4d_bs32_queue16384_wd0.0001_t0.2_cos/
 **/__pycache__/
