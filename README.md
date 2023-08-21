@@ -85,7 +85,7 @@ Training data should be put in a CSV file, containing the following columns:
 
 ## Train and Testing
 ### Pretrain the network using Moco-V2
-We adopted the implementation of Moco-V2 from [MoCo-v2](https://github.com/facebookresearch/moco-v2) for pre-training.
+We adopted a open-source implementation of [MoCo-v2](https://github.com/facebookresearch/moco-v2) for pre-training.
 To pre-train the network, enter the `MoCo-v2` directory and run the following command:
 `python main_moco.py`. Optionally, you may need to change configuration parameters stored in `config.py`.
 The trained model will be saved in `MoCo-v2/models/resnet50_bs32_queue16384_wd0.0001_t0.2_cos)` directory. We choose the model with the least eval loss as the pretrained model.
