@@ -89,7 +89,7 @@ class TrainerConfig(Config):
     lr = Parser('lr', 0.001, float, 'learning rate')
     device = Parser('device', 'cuda:0', str, 'device')
     num_workers = Parser('num_workers', 4, int, 'number of workers')
-    model = Parser('model', 'convnext_tiny', str, 'backbone model')
+    model = Parser('model', 'resnet50', str, 'backbone model')
 
 
 class Trainer():

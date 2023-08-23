@@ -22,7 +22,7 @@ class DeepSurModel(nn.Module):
         self.register_buffer('b', b)
         self.register_buffer('k', k)
 
-        self.cnn = ModelProgression()
+        self.cnn = ModelProgression(backbone='resnet50', output_size=512)
 
     def _cdf_at(self, t):
         # pdf: nBatch * n * K
@@ -107,9 +107,10 @@ class TrainerDR(Trainer):
         model = DeepSurModel().to(self.device)
         if self.cfg.load_pretrain is not None:
             print('loading ', self.cfg.load_pretrain)
-            model.cnn.backbone.load_state_dict(
+            print(model.cnn.backbone.load_state_dict(
                 torch.load(self.cfg.load_pretrain, map_location=self.device)
-            )
+            ))
+        return model
 
     @cached_property
     def beta(self):
