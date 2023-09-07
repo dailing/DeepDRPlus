@@ -37,7 +37,7 @@ cfg.moco.epochs = 600  # 600 800 1000
 
 cfg.moco.optimizer_params = {}
 cfg.moco.optimizer_momentum = 0.9
-cfg.moco.lr = 1e-3
+cfg.moco.lr = 1e-5
 cfg.moco.min_lr = 5e-7
 cfg.moco.cos = True
 cfg.moco.best_policy = 'val_loss'

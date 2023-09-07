@@ -102,16 +102,18 @@ class TrainerDR(Trainer):
             torch.log(P2 + 0.000001) * self.beta * (e)
         )
         loss += torch.abs(w).mean() * 0.00000001
-        time_to_cal = torch.linspace(0, 20, 240).to(
+        time_to_cal = torch.linspace(0.1, 20, 240).to(
             self.cfg.device).view(1, -1)
         cdf = self.model.calculate_cdf(w, time_to_cal)
         pdf = self.model.calculate_pdf(w, time_to_cal)
+        survival_time = self.model.calculate_survial_time(w)
         return dict(
             loss=loss.mean(),
             cdf=cdf,
             pdf=pdf,
             t1=t1,
             t2=t2,
+            survival_time=survival_time,
             gt=data['gt'],
         )
 

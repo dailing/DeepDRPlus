@@ -105,12 +105,12 @@ All options are listed in the help documents. Refer to `trainer.py` for more det
     * "num_workers": the number of workers for data loading
     * "model": the model name, ResNet-18 and ResNet-50 are supported
 1. Training fundus model:
-    * run `python train_eval_fund.py`, with proper hyper-parameters settings.
-    * the evaluation results are saved in `logs/` in a pickle dump. see trainer.py for more details.
-    * to run with pretrained model, invoke `load_pretrain=MoCo-v2/models/resnet50_bs32_queue16384_wd0.0001_t0.2_cos/checkpoint_resnet50_bs32_queue16384_wd0.0001_t0.2_cos_epoch-60.pth python train_eval_fund.py `, change the model dump path as needed.
+    * Run `python train_eval_fund.py`, with proper hyper-parameters settings.
+    * The evaluation results are saved in `logs/` in a pickle dump. see trainer.py for more details.
+    * To run with pretrained model, invoke `load_pretrain=MoCo-v2/models/resnet50_bs32_queue16384_wd0.0001_t0.2_cos/load_pretrain=../MoCo-v2/models/resnet50_bs32_queue16384_wd0.0001_t0.2_cos/599.pth python train_eval_fund.py `, change the model dump path as needed.
 1. Training metadata model or combined model:
-    * to train the model, first prepare the dataset, in CSV format containing normalized features as well as event information.
-    * the feature names to use for training are provided with command-line arguments.
-    * e.g. run `python train_eval_cov.py AGE GENDER HBA1C SBP DBP BMI LDL HDL T2D_dur`, with proper hyper-parameters settings to train the metadata model with AGE, GENDER, HBA1C, SBP, DBP, BMI, LDL, HDL, T2D_dur as covariables.
-    * to run the combined model, extract the scores from the fundus model and add it to the CSV file, invoke `python train_eval_combined.py`. with fundus score included in the command-line arguments.
-    * the evaluation results are saved in `logs/` as a pickle dump. see trainer.py for more details.
+    * To train the model, first prepare the dataset, in CSV format containing normalized features as well as event information.
+    * The feature names to use for training are provided with command-line arguments.
+    * E.g. run `python train_eval_cov.py AGE GENDER HBA1C SBP DBP BMI LDL HDL T2D_dur`, with proper hyper-parameters settings to train the metadata model with AGE, GENDER, HBA1C, SBP, DBP, BMI, LDL, HDL, T2D_dur as covariables.
+    * To run the combined model, extract the scores from the fundus model and add it to the CSV file, invoke `python train_eval_cov.py AGE GENDER HBA1C SBP DBP BMI LDL HDL T2D_dur fund_score`. with fundus score included in the command-line arguments.
+    * The evaluation results are saved in `logs/` as a pickle dump. see trainer.py for more details.

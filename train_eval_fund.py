@@ -1,3 +1,4 @@
+import math
 from model import ModelProgression
 from torch import nn
 import torch
@@ -68,6 +69,22 @@ class DeepSurModel(nn.Module):
         pdf = pdf * w
         pdf = pdf.sum(dim=2)
         return pdf
+
+    def calculate_survial_time(self, w, t_max=10, resolution=20):
+        """
+        Calculates the survival time for the given data.
+        """
+        t = torch.linspace(
+            1/resolution,
+            t_max,
+            math.ceil(resolution*t_max)-1,
+            dtype=torch.float32,
+            device=w.device).view(1, -1)
+        pdf = self.calculate_pdf(w, t)
+        # print(pdf[])
+        est = t.view(-1)[torch.argmax(pdf, dim=1)]
+        # print(torch.argmax(pdf, dim=1).shape())
+        return est
 
     def forward(self, x, t=None):
         x = self.cnn(x)
@@ -171,12 +188,14 @@ class TrainerDR(Trainer):
             self.cfg.device).view(1, -1)
         cdf = self.model.calculate_cdf(w, time_to_cal)
         pdf = self.model.calculate_pdf(w, time_to_cal)
+        survival_time = self.model.calculate_survial_time(w)
         return dict(
             loss=loss.mean(),
             pdf=pdf,
             cdf=cdf,
             t1=t1,
             t2=t2,
+            survival_time=survival_time,
             gt=data['gt'],
         )
 

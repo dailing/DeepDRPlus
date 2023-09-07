@@ -260,7 +260,7 @@ class Checkpoint:
 
         if epoch:
             torch.save(self.model.q_encoder.state_dict(), os.path.join(
-                self.version_dir, f'{epoch:0.3d}.pth'))
+                self.version_dir, f'{epoch:03d}.pth'))
 
     def plot_checkpoint(self,
                         attributes: List[str],
