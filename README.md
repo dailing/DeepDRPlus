@@ -123,6 +123,6 @@ All options are listed in the help documents. Refer to `trainer.py` for more det
 1. Training metadata model or combined model:
     * To train the model, first prepare the dataset, in CSV format containing normalized features as well as event information.
     * The feature names to use for training are provided with command-line arguments.
-    * E.g. run `python train_eval_cov.py age gender hba1c sbp dbp bmi ldl hdl t2d_dur`, with proper hyper-parameters settings to train the metadata model with AGE, GENDER, HBA1C, SBP, DBP, BMI, LDL, HDL, T2D_dur as covariables.
-    * To run the combined model, extract the scores from the fundus model and add it to the CSV file, invoke `python train_eval_cov.py age gender hba1c sbp dbp bmi ldl hdl t2d_dur fund_score`. with fundus score included in the command-line arguments.
+    * E.g. run `python train_eval_covar.py age gender hba1c sbp dbp bmi ldl hdl t2d_dur`, with proper hyper-parameters settings to train the metadata model with AGE, GENDER, HBA1C, SBP, DBP, BMI, LDL, HDL, T2D_dur as covariables.
+    * To run the combined model, extract the scores from the fundus model and add it to the CSV file, invoke `python train_eval_covar.py age gender hba1c sbp dbp bmi ldl hdl t2d_dur fund_score`. with fundus score included in the command-line arguments.
     * The evaluation results are saved in `logs/` as a pickle dump. see trainer.py for more details.
