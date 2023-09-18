@@ -117,7 +117,7 @@ A sample of training and testing data are also also provided in [data_fund](data
 
 ## Train and Testing
 ### Pretrain the network using Moco-V2
-We adopted a open-source implementation of [MoCo-v2](https://github.com/facebookresearch/moco-v2) for pre-training.
+We adopted an open-source implementation of [MoCo-v2](https://github.com/facebookresearch/moco-v2) for pre-training.
 To pre-train the network, enter the `MoCo-v2` directory and run the following command:
 `python main_moco.py`. Optionally, you may need to change configuration parameters stored in `config.py`.
 The trained model will be saved in `MoCo-v2/models/resnet50_bs32_queue16384_wd0.0001_t0.2_cos)` directory. We choose the model with the least eval loss as the pretrained model.
@@ -138,11 +138,11 @@ All options are listed in the help documents. Refer to `trainer.py` for more det
     * "model": the model name, ResNet-18 and ResNet-50 are supported
 1. Training fundus model:
     * Run `python train_eval_fund.py`, with proper hyper-parameters settings.
-    * The evaluation results are saved in `logs/` in a pickle dump. see trainer.py for more details.
+    * The evaluation results are saved in `logs/` in a pickle dump. See trainer.py for more details.
     * To run with pretrained model, invoke `load_pretrain=MoCo-v2/models/resnet50_bs32_queue16384_wd0.0001_t0.2_cos/load_pretrain=../MoCo-v2/models/resnet50_bs32_queue16384_wd0.0001_t0.2_cos/599.pth python train_eval_fund.py `, change the model dump path as needed.
 1. Training metadata model or combined model:
     * To train the model, first prepare the dataset, in CSV format containing normalized features as well as event information.
     * The feature names to use for training are provided with command-line arguments.
-    * E.g. run `python train_eval_cov.py age gender smoker duration_DM BMI HbA1c SBP DBP TG LDL_C HDL_C`
-    * To run the combined model, extract the scores from the fundus model and add it to the CSV file, invoke `python train_eval_cov.py age gender smoker duration_DM BMI HbA1c SBP DBP TG LDL_C HDL_C fundus_score`. with fundus score included in the command-line arguments.
+    * E.g. run `python train_eval_covar.py age gender smoker duration_DM BMI HbA1c SBP DBP TG LDL_C HDL_C`
+    * To run the combined model, extract the scores from the fundus model and add it to the CSV file, invoke `python train_eval_covar.py age gender smoker duration_DM BMI HbA1c SBP DBP TG LDL_C HDL_C fundus_score`. with fundus score included in the command-line arguments.
     * The evaluation results are saved in `logs/` as a pickle dump. see trainer.py for more details.
